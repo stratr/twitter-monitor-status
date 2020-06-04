@@ -23,29 +23,14 @@ def pubsub_tweet_monitor_live(event, context):
     """
     query_job = client.query(query)  # Make an API request.
 
-    print(query_job)
+    print(query_job.result())
 
     for row in query_job:
         # Row values can be accessed by field name or index.
         print("row_num={}, last_tweet_time={}".format(row[0], row["last_tweet_time"]))
 
-    #table = client.get_table(table_id)
+    # https://stackoverflow.com/questions/45003833/how-to-run-a-bigquery-query-in-python
 
-    # insert_rows = []
-    # for row in query_job:
-    #     list_row = list(row)
-    #     stem_words = [stemmer.stem(item) for item in list_row[2]]
-    #     list_row.append(stem_words)
-
-    #     insert_rows.append(list_row)
-
-    # errors = client.insert_rows(table, insert_rows)  # Make an API request.
-    # if errors == []:
-    #     print("New rows have been added.")
-    # else:
-    #     print(errors)
-
-    # event data
     if 'data' in event:
         event_data = base64.b64decode(event['data']).decode('utf-8')
     else:
