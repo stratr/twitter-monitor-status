@@ -3,7 +3,6 @@ import base64
 import datetime
 
 client = bigquery.Client()
-# table_id = "tanelis.tweets_stemmed.stem_words"
 
 
 query_sql = """
@@ -37,11 +36,26 @@ def pubsub_tweet_monitor_live(event, context):
     context (google.cloud.functions.Context): Metadata for the event.
     """
 
+    alerts = []
+
     last_tweet_time = query_last_tweet_time()
     now = datetime.datetime.now()
 
     time_difference = now - last_tweet_time
+    if time_difference > datetime.timedelta(hours=10):
+        print("More than 10 hours passed since last tweet.")
+        alerts.append["More than 10 hours since last tweet from the API"]
+
     print("Time elapsed between last tweet and now: {}".format(time_difference))
+
+    #TODO: send an email with the alert details
+    print("All alerts: {}".format(", ".join(alerts)))
+    if len(alerts) > 0:
+        alert_msg = "Monitor health checks done. There were same errors: {}".format(", ".join(alerts))
+
+        print("Send an alert.")
+    else:
+        print("No alerts.")
 
     # event data
     if 'data' in event:
