@@ -5,18 +5,7 @@ import datetime
 client = bigquery.Client()
 
 
-query_sql = """
-SELECT
-MAX(PARSE_DATETIME('%Y-%m-%d %H:%M:%S',
-CONCAT(date, " ", REGEXP_EXTRACT(date_string, r"(\\d{2}:\\d{2}:\\d{2})")))) AS last_tweet_time
-FROM
-`tanelis.tweets_eu.raw_tweets`
-WHERE
-date >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
-"""
-
-
-def query_last_tweet_time():
+def query_request(query_sql):
     data = []
 
     client = bigquery.Client()
@@ -26,7 +15,21 @@ def query_last_tweet_time():
     for row in results:
         data.append(row["last_tweet_time"])
 
-    return data[0]
+    return data
+
+
+def query_last_tweet_time():
+    query_sql = """
+    SELECT
+    MAX(PARSE_DATETIME('%Y-%m-%d %H:%M:%S',
+        CONCAT(date, " ", REGEXP_EXTRACT(date_string, r"(\d{2}:\d{2}:\d{2})")))) AS last_tweet_time
+    FROM
+    `tanelis.tweets_eu.raw_tweets`
+    WHERE
+    date >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+    """
+
+    return query_request(query_sql)[0]
 
 
 def pubsub_tweet_monitor_live(event, context):
@@ -44,7 +47,7 @@ def pubsub_tweet_monitor_live(event, context):
     time_difference = now - last_tweet_time
     if time_difference > datetime.timedelta(hours=10):
         print("More than 10 hours passed since last tweet.")
-        alerts.append["More than 10 hours since last tweet from the API"]
+        alerts.append("More than 10 hours since last tweet from the API")
 
     print("Time elapsed between last tweet and now: {}".format(time_difference))
 
